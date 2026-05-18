@@ -1,3 +1,4 @@
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 import {
   Injectable, NotFoundException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
@@ -9,11 +10,11 @@ import { Endereco } from '../enderecos/endereco.entity';
 
 import { IsString, IsDateString, IsNumber, IsOptional } from "class-validator";
 export class CriarServicoDto {
-  tipo: TipoServico;
-  descricao?: string;
-  enderecoId: string;
-  dataAgendada: Date;
-  horasEstimadas: number;
+  @IsString() tipo: TipoServico;
+  @IsOptional() @IsString() descricao?: string;
+  @IsString() enderecoId: string;
+  @IsString() dataAgendada: any;
+  @IsNumber() horasEstimadas: number;
 }
 
 export class AvaliarServicoDto {
