@@ -25,7 +25,7 @@ import { TipoServicoService } from './tipos-servico/tipo-servico.service';
         type: 'postgres',
         url: config.get('DATABASE_URL'),
         entities: [User, Servico, Mensagem, Pagamento, Endereco, TipoServico],
-        synchronize: true,
+        synchronize: false,
         ssl: { rejectUnauthorized: false },
         logging: false,
       }),
