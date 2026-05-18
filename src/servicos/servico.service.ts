@@ -6,8 +6,8 @@ import { Repository } from 'typeorm';
 import { Servico, StatusServico, TipoServico } from './servico.entity';
 import { User } from '../users/user.entity';
 import { Endereco } from '../enderecos/endereco.entity';
+import { IsString, IsNumber, IsOptional } from 'class-validator';
 
-import { IsString, IsDateString, IsNumber, IsOptional } from "class-validator";
 export class CriarServicoDto {
   @IsString() tipo: string;
   @IsOptional() @IsString() descricao?: string;
@@ -29,14 +29,12 @@ export class ServicoService {
     @InjectRepository(Endereco) private enderecoRepo: Repository<Endereco>,
   ) {}
 
-  // ── Cliente: solicitar ────────────────────────────────────────────────────
   async criar(clienteId: string, dto: CriarServicoDto): Promise<Servico> {
     const endereco = await this.enderecoRepo.findOne({
       where: { id: dto.enderecoId, userId: clienteId },
     });
     if (!endereco) throw new NotFoundException('Endereço não encontrado');
 
-    // Valor base: R$ 45/h (ajustar conforme regra de negócio)
     const valorHora = 45;
     const valorTotal = valorHora * dto.horasEstimadas;
 
@@ -55,8 +53,12 @@ export class ServicoService {
     return this.servicoRepo.save(servico);
   }
 
-  // ── Diarista: listar disponíveis ──────────────────────────────────────────
-  async disponiveis(): Promise<Servico[]> {
+  // ── Diarista: listar disponíveis (apenas aprovadas) ───────────────────────
+  async disponiveis(diaristaId: string): Promise<Servico[]> {
+    const diarista = await this.userRepo.findOne({ where: { id: diaristaId } });
+    if (!diarista?.documentoVerificado) {
+      throw new ForbiddenException('Sua conta ainda não foi aprovada pelo administrador.');
+    }
     return this.servicoRepo.find({
       where: { status: 'aguardando' },
       order: { createdAt: 'DESC' },
@@ -64,13 +66,11 @@ export class ServicoService {
     });
   }
 
-  // ── Diarista: aceitar ─────────────────────────────────────────────────────
   async aceitar(id: string, diaristaId: string): Promise<Servico> {
     const servico = await this.buscarPorId(id);
     if (servico.status !== 'aguardando')
       throw new BadRequestException('Serviço não está disponível para aceitar');
 
-    // Usar valorHora da diarista se disponível
     const diarista = await this.userRepo.findOne({ where: { id: diaristaId } });
     if (diarista?.valorHora) {
       servico.valorHora = Number(diarista.valorHora);
@@ -82,7 +82,6 @@ export class ServicoService {
     return this.servicoRepo.save(servico);
   }
 
-  // ── Diarista: iniciar ─────────────────────────────────────────────────────
   async iniciar(id: string, diaristaId: string): Promise<Servico> {
     const servico = await this.buscarPorId(id);
     this.verificarDiarista(servico, diaristaId);
@@ -92,21 +91,16 @@ export class ServicoService {
     return this.servicoRepo.save(servico);
   }
 
-  // ── Diarista: concluir ────────────────────────────────────────────────────
   async concluir(id: string, diaristaId: string): Promise<Servico> {
     const servico = await this.buscarPorId(id);
     this.verificarDiarista(servico, diaristaId);
     if (servico.status !== 'em_andamento')
       throw new BadRequestException('Serviço não está em andamento');
     servico.status = 'concluido';
-
-    // Incrementar contador da diarista
     await this.userRepo.increment({ id: diaristaId }, 'servicosRealizados', 1);
-
     return this.servicoRepo.save(servico);
   }
 
-  // ── Cliente: cancelar ─────────────────────────────────────────────────────
   async cancelar(id: string, userId: string, motivo: string): Promise<Servico> {
     const servico = await this.buscarPorId(id);
     const cancelaveis: StatusServico[] = ['aguardando', 'matching', 'aceito'];
@@ -117,7 +111,6 @@ export class ServicoService {
     return this.servicoRepo.save(servico);
   }
 
-  // ── Cliente: avaliar ──────────────────────────────────────────────────────
   async avaliar(id: string, clienteId: string, dto: AvaliarServicoDto): Promise<Servico> {
     const servico = await this.buscarPorId(id);
     if (servico.clienteId !== clienteId) throw new ForbiddenException();
@@ -128,14 +121,10 @@ export class ServicoService {
     servico.avaliacaoNota = dto.nota;
     if (dto.comentario) servico.avaliacaoComentario = dto.comentario;
     const saved = await this.servicoRepo.save(servico);
-
-    // Recalcular média da diarista
     if (servico.diaristaId) await this.recalcularMedia(servico.diaristaId);
-
     return saved;
   }
 
-  // ── Histórico ─────────────────────────────────────────────────────────────
   async historicoCliente(clienteId: string, page: number, limit: number) {
     const [data, total] = await this.servicoRepo.findAndCount({
       where: { clienteId },

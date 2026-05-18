@@ -42,8 +42,8 @@ export class ServicoController {
   // ── Diarista ───────────────────────────────────────────────────────────────
   @Get('disponiveis')
   @Roles('diarista')
-  disponiveis() {
-    return this.servicoService.disponiveis();
+  disponiveis(@CurrentUser() user) {
+    return this.servicoService.disponiveis(user.id);
   }
 
   @Get('meus')
