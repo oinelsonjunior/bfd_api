@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { UserRole } from '../users/user.entity';
+type UserRole = 'cliente' | 'diarista';
 
 // Guard JWT padrão
 @Injectable()

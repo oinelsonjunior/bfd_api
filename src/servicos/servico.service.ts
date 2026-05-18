@@ -125,7 +125,7 @@ export class ServicoService {
     if (dto.nota < 1 || dto.nota > 5) throw new BadRequestException('Nota deve ser entre 1 e 5');
 
     servico.avaliacaoNota = dto.nota;
-    servico.avaliacaoComentario = dto.comentario;
+    servico.avaliacaoComentario = dto.comentario ?? null;
     const saved = await this.servicoRepo.save(servico);
 
     // Recalcular média da diarista
