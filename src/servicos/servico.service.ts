@@ -7,6 +7,7 @@ import { Servico, StatusServico, TipoServico } from './servico.entity';
 import { User } from '../users/user.entity';
 import { Endereco } from '../enderecos/endereco.entity';
 
+import { IsString, IsDateString, IsNumber, IsOptional } from "class-validator";
 export class CriarServicoDto {
   tipo: TipoServico;
   descricao?: string;
