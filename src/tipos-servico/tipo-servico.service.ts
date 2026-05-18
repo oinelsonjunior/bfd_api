@@ -1,27 +1,27 @@
-// ── Service ───────────────────────────────────────────────────────────────
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { TipoServico } from './tipo-servico.entity';
+import { IsString, IsNumber, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreateTipoServicoDto {
-  codigo: string;
-  nome: string;
-  descricao?: string;
-  precoBase: number;
-  horasMinimas?: number;
-  horasMaximas?: number;
-  icone?: string;
+  @IsString() codigo: string;
+  @IsString() nome: string;
+  @IsOptional() @IsString() descricao?: string;
+  @IsNumber() precoBase: number;
+  @IsOptional() @IsNumber() horasMinimas?: number;
+  @IsOptional() @IsNumber() horasMaximas?: number;
+  @IsOptional() @IsString() icone?: string;
 }
 
 export class UpdateTipoServicoDto {
-  nome?: string;
-  descricao?: string;
-  precoBase?: number;
-  horasMinimas?: number;
-  horasMaximas?: number;
-  ativo?: boolean;
-  icone?: string;
+  @IsOptional() @IsString() nome?: string;
+  @IsOptional() @IsString() descricao?: string;
+  @IsOptional() @IsNumber() precoBase?: number;
+  @IsOptional() @IsNumber() horasMinimas?: number;
+  @IsOptional() @IsNumber() horasMaximas?: number;
+  @IsOptional() @IsBoolean() ativo?: boolean;
+  @IsOptional() @IsString() icone?: string;
 }
 
 @Injectable()
@@ -44,12 +44,6 @@ export class TipoServicoService {
     return tipo;
   }
 
-  async buscarPorCodigo(codigo: string): Promise<TipoServico> {
-    const tipo = await this.repo.findOne({ where: { codigo } });
-    if (!tipo) throw new NotFoundException(`Tipo "${codigo}" não encontrado`);
-    return tipo;
-  }
-
   criar(dto: CreateTipoServicoDto): Promise<TipoServico> {
     const tipo = this.repo.create(dto);
     return this.repo.save(tipo);
@@ -66,19 +60,16 @@ export class TipoServicoService {
     await this.repo.delete(id);
   }
 
-  // Seed dos tipos padrão
   async seed(): Promise<void> {
     const count = await this.repo.count();
     if (count > 0) return;
-
     const tipos = [
-      { codigo: 'limpeza_basica', nome: 'Limpeza Básica', descricao: 'Limpeza geral da casa', precoBase: 45, horasMinimas: 2, horasMaximas: 6, icone: 'home' },
-      { codigo: 'limpeza_completa', nome: 'Limpeza Completa', descricao: 'Limpeza profunda de todos os cômodos', precoBase: 55, horasMinimas: 4, horasMaximas: 12, icone: 'sparkles' },
-      { codigo: 'limpeza_pos_obra', nome: 'Limpeza Pós-Obra', descricao: 'Limpeza especializada após reformas', precoBase: 70, horasMinimas: 6, horasMaximas: 12, icone: 'construct' },
-      { codigo: 'passar_roupa', nome: 'Passar Roupa', descricao: 'Serviço de passar roupas', precoBase: 35, horasMinimas: 2, horasMaximas: 8, icone: 'shirt' },
-      { codigo: 'organizar', nome: 'Organização', descricao: 'Organização de ambientes e armários', precoBase: 50, horasMinimas: 2, horasMaximas: 8, icone: 'filing' },
+      { codigo: 'limpeza_basica', nome: 'Limpeza Básica', descricao: 'Limpeza geral da casa', precoBase: 45, horasMinimas: 2, horasMaximas: 6 },
+      { codigo: 'limpeza_completa', nome: 'Limpeza Completa', descricao: 'Limpeza profunda de todos os cômodos', precoBase: 55, horasMinimas: 4, horasMaximas: 12 },
+      { codigo: 'limpeza_pos_obra', nome: 'Limpeza Pós-Obra', descricao: 'Limpeza especializada após reformas', precoBase: 70, horasMinimas: 6, horasMaximas: 12 },
+      { codigo: 'passar_roupa', nome: 'Passar Roupa', descricao: 'Serviço de passar roupas', precoBase: 35, horasMinimas: 2, horasMaximas: 8 },
+      { codigo: 'organizar', nome: 'Organização', descricao: 'Organização de ambientes e armários', precoBase: 50, horasMinimas: 2, horasMaximas: 8 },
     ];
-
     await this.repo.save(this.repo.create(tipos));
     console.log('[Seed] Tipos de serviço criados!');
   }
