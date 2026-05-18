@@ -13,6 +13,7 @@ async function bootstrap() {
     whitelist: true,
     forbidNonWhitelisted: false,
     transform: true,
+    transformOptions: { enableImplicitConversion: true },
   }));
 
   // Serialização (esconde campos @Exclude como senha)
