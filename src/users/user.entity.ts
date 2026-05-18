@@ -4,7 +4,7 @@ import {
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 
-export type UserRole = 'cliente' | 'diarista';
+export type UserRole = 'cliente' | 'diarista' | 'admin';
 
 @Entity('users')
 export class User {
