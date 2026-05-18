@@ -1,5 +1,5 @@
 import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator';
-import { UserRole } from '../users/user.entity';
+type UserRole = 'cliente' | 'diarista';
 
 export class LoginDto {
   @IsEmail({}, { message: 'E-mail inválido' })
