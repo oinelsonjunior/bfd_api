@@ -18,7 +18,7 @@ import { Endereco } from './enderecos/endereco.entity';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => ({
-        type: 'mysql',
+        type: 'postgres',
         host: config.get('DB_HOST'),
         port: config.get<number>('DB_PORT'),
         username: config.get('DB_USERNAME'),
@@ -27,7 +27,7 @@ import { Endereco } from './enderecos/endereco.entity';
         entities: [User, Servico, Mensagem, Pagamento, Endereco],
         synchronize: config.get('NODE_ENV') !== 'production',
         logging: config.get('NODE_ENV') === 'development',
-        charset: 'utf8mb4',
+        
       }),
       inject: [ConfigService],
     }),
