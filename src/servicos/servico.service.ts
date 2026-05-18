@@ -42,7 +42,7 @@ export class ServicoService {
 
     const servico = this.servicoRepo.create({
       clienteId,
-      tipo: dto.tipo,
+      tipo: dto.tipo as TipoServico,
       descricao: dto.descricao,
       enderecoId: dto.enderecoId,
       dataAgendada: dto.dataAgendada,
