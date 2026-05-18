@@ -53,7 +53,7 @@ export class Servico {
   @Column()
   enderecoId: string;
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'timestamptz' })
   dataAgendada: Date;
 
   @Column({ type: 'int' })

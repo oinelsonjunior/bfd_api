@@ -49,7 +49,7 @@ export class Pagamento {
   @Column({ nullable: true, type: 'text' })
   pixCopiaCola: string;
 
-  @Column({ nullable: true, type: 'datetime' })
+  @Column({ nullable: true, type: 'timestamptz' })
   pixExpiracao: Date;
 
   @CreateDateColumn()
