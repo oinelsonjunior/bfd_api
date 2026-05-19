@@ -72,6 +72,27 @@ export class AuthService {
     );
   }
 
+  async resetPassword(token: string, novaSenha: string): Promise<void> {
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8');
+      const [userId, timestamp] = decoded.split(':');
+      const agora = Date.now();
+      const expiracao = 60 * 60 * 1000; // 1 hora
+
+      if (agora - parseInt(timestamp) > expiracao) {
+        throw new UnauthorizedException('Token expirado');
+      }
+
+      const user = await this.userRepo.findOne({ where: { id: userId } });
+      if (!user) throw new UnauthorizedException('Token inválido');
+
+      user.senha = await bcrypt.hash(novaSenha, 12);
+      await this.userRepo.save(user);
+    } catch {
+      throw new UnauthorizedException('Token inválido ou expirado');
+    }
+  }
+
   private async gerarTokens(user: User) {
     const payload = { sub: user.id, email: user.email, role: user.role };
     const accessToken = this.jwtService.sign(payload, {

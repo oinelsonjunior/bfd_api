@@ -33,4 +33,11 @@ export class AuthController {
     await this.authService.forgotPassword(dto.email);
     return { message: 'Se o e-mail existir, você receberá as instruções.' };
   }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  async resetPassword(@Body() dto: { token: string; novaSenha: string }) {
+    await this.authService.resetPassword(dto.token, dto.novaSenha);
+    return { message: 'Senha redefinida com sucesso.' };
+  }
 }
