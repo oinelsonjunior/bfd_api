@@ -60,8 +60,16 @@ export class AdminController {
   listarServicos() { return this.adminService.listarServicos(); }
 }
 
+  @Post('diaristas/:id/foto')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  async uploadFoto(@Param('id') id: string, @Body() body: { base64: string }) {
+    return this.adminService.uploadFotoDiarista(id, body.base64);
+  }
+}
+
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Servico])],
+  imports: [TypeOrmModule.forFeature([User, Servico]), UploadModule],
   controllers: [AdminController],
   providers: [AdminService],
 })

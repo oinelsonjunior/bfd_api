@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { UploadService } from '../upload/upload.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
@@ -9,6 +10,7 @@ export class AdminService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Servico) private servicoRepo: Repository<Servico>,
+    private uploadService: UploadService,
   ) {}
 
   listarDiaristas(aprovadas?: boolean): Promise<User[]> {
@@ -77,6 +79,14 @@ export class AdminService {
     const receitaTotal = parseFloat(receitaResult?.total ?? '0');
 
     return { totalClientes, totalDiaristas, diaristasNaoAprovadas, totalServicos, servicosConcluidos, receitaTotal };
+  }
+
+  async uploadFotoDiarista(id: string, base64: string): Promise<User> {
+    const user = await this.userRepo.findOne({ where: { id, role: 'diarista' } });
+    if (!user) throw new NotFoundException('Diarista não encontrada');
+    const url = await this.uploadService.uploadFoto(base64, 'diaristas');
+    user.fotoPerfil = url;
+    return this.userRepo.save(user);
   }
 
   async criarAdmin(email: string, senha: string, secret: string): Promise<User> {
