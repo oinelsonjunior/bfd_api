@@ -4,6 +4,7 @@ import { JwtAuthGuard, RolesGuard, Roles } from '../common/guards/jwt-auth.guard
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
+import { Servico } from '../servicos/servico.entity';
 
 @Controller('admin')
 export class AdminController {
@@ -38,14 +39,29 @@ export class AdminController {
   @Roles('admin' as any)
   reprovar(@Param('id') id: string) { return this.adminService.reprovarDiarista(id); }
 
+  @Patch('usuarios/:id/bloquear')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  bloquear(@Param('id') id: string) { return this.adminService.bloquearUsuario(id); }
+
+  @Patch('usuarios/:id/desbloquear')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  desbloquear(@Param('id') id: string) { return this.adminService.desbloquearUsuario(id); }
+
   @Get('clientes')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin' as any)
   listarClientes() { return this.adminService.listarClientes(); }
+
+  @Get('servicos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  listarServicos() { return this.adminService.listarServicos(); }
 }
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User])],
+  imports: [TypeOrmModule.forFeature([User, Servico])],
   controllers: [AdminController],
   providers: [AdminService],
 })
