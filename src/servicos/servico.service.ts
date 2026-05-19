@@ -82,6 +82,15 @@ export class ServicoService {
     return this.servicoRepo.save(servico);
   }
 
+  async aCaminho(id: string, diaristaId: string): Promise<Servico> {
+    const servico = await this.buscarPorId(id);
+    this.verificarDiarista(servico, diaristaId);
+    if (servico.status !== 'aceito')
+      throw new BadRequestException('Status inválido para a caminho');
+    servico.status = 'a_caminho';
+    return this.servicoRepo.save(servico);
+  }
+
   async iniciar(id: string, diaristaId: string): Promise<Servico> {
     const servico = await this.buscarPorId(id);
     this.verificarDiarista(servico, diaristaId);
