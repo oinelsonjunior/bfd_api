@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy, LocalAuthStrategy } from './auth.strategy';
 import { User } from '../users/user.entity';
+import { EmailModule } from '../email/email.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { User } from '../users/user.entity';
       }),
       inject: [ConfigService],
     }),
+    EmailModule,
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy, LocalAuthStrategy],

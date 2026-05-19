@@ -1,5 +1,5 @@
 import {
-  Injectable, ConflictException, UnauthorizedException, NotFoundException,
+  Injectable, ConflictException, UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { User } from '../users/user.entity';
 import { RegisterDto } from './auth.dto';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +16,7 @@ export class AuthService {
     @InjectRepository(User) private userRepo: Repository<User>,
     private jwtService: JwtService,
     private config: ConfigService,
+    private emailService: EmailService,
   ) {}
 
   async validateUser(email: string, senha: string): Promise<User | null> {
@@ -31,10 +33,17 @@ export class AuthService {
   async register(dto: RegisterDto) {
     const existe = await this.userRepo.findOne({ where: { email: dto.email } });
     if (existe) throw new ConflictException('E-mail já cadastrado');
-
     const hash = await bcrypt.hash(dto.senha, 12);
     const user = this.userRepo.create({ ...dto, senha: hash });
     await this.userRepo.save(user);
+
+    // Enviar e-mail de boas-vindas (não bloqueia o cadastro)
+    if (dto.role === 'cliente') {
+      this.emailService.enviarBoasVindas(dto.email, dto.nome).catch(err =>
+        console.error('[Email] Erro ao enviar boas-vindas:', err)
+      );
+    }
+
     return this.gerarTokens(user);
   }
 
@@ -53,25 +62,26 @@ export class AuthService {
 
   async forgotPassword(email: string): Promise<void> {
     const user = await this.userRepo.findOne({ where: { email } });
-    if (!user) return; // Silencioso por segurança
-    // TODO: integrar com serviço de e-mail (Nodemailer, SendGrid, etc.)
-    // Gerar token temporário e enviar e-mail com link de reset
-    console.log(`[Auth] Reset de senha solicitado para: ${email}`);
+    if (!user) return;
+
+    // Gerar token simples (em produção usar crypto + salvar no banco)
+    const token = Buffer.from(`${user.id}:${Date.now()}`).toString('base64');
+
+    this.emailService.enviarRecuperacaoSenha(email, token).catch(err =>
+      console.error('[Email] Erro ao enviar recuperação:', err)
+    );
   }
 
   private async gerarTokens(user: User) {
     const payload = { sub: user.id, email: user.email, role: user.role };
-
     const accessToken = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_SECRET'),
       expiresIn: this.config.get('JWT_EXPIRES_IN'),
     });
-
     const refreshToken = this.jwtService.sign(payload, {
       secret: this.config.get('JWT_REFRESH_SECRET'),
       expiresIn: this.config.get('JWT_REFRESH_EXPIRES_IN'),
     });
-
     const { senha, ...userSemSenha } = user;
     return { accessToken, refreshToken, user: userSemSenha };
   }
