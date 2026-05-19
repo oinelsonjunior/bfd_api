@@ -62,6 +62,12 @@ export class ServicoController {
     return this.servicoService.aceitar(id, user.id);
   }
 
+  @Patch(':id/a-caminho')
+  @Roles('diarista')
+  aCaminho(@Param('id') id: string, @CurrentUser() user) {
+    return this.servicoService.aCaminho(id, user.id);
+  }
+
   @Patch(':id/iniciar')
   @Roles('diarista')
   iniciar(@Param('id') id: string, @CurrentUser() user) {
