@@ -80,6 +80,12 @@ export class ServicoController {
     return this.servicoService.concluir(id, user.id);
   }
 
+  @Patch(':id/cancelar-diarista')
+  @Roles('diarista')
+  cancelarDiarista(@Param('id') id: string, @CurrentUser() user) {
+    return this.servicoService.cancelar(id, user.id, 'Cancelado pela diarista');
+  }
+
   // ── Compartilhado ──────────────────────────────────────────────────────────
   @Get(':id')
   buscarPorId(@Param('id') id: string) {
