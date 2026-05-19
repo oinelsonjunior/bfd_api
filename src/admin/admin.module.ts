@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { Servico } from '../servicos/servico.entity';
+import { UploadModule } from '../upload/upload.module';
 
 @Controller('admin')
 export class AdminController {
@@ -39,6 +40,13 @@ export class AdminController {
   @Roles('admin' as any)
   reprovar(@Param('id') id: string) { return this.adminService.reprovarDiarista(id); }
 
+  @Post('diaristas/:id/foto')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  uploadFoto(@Param('id') id: string, @Body() body: { base64: string }) {
+    return this.adminService.uploadFotoDiarista(id, body.base64);
+  }
+
   @Patch('usuarios/:id/bloquear')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin' as any)
@@ -58,14 +66,6 @@ export class AdminController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin' as any)
   listarServicos() { return this.adminService.listarServicos(); }
-}
-
-  @Post('diaristas/:id/foto')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin' as any)
-  async uploadFoto(@Param('id') id: string, @Body() body: { base64: string }) {
-    return this.adminService.uploadFotoDiarista(id, body.base64);
-  }
 }
 
 @Module({
