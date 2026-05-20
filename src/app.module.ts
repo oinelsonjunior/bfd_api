@@ -8,12 +8,14 @@ import { PagamentoModule } from './pagamentos/pagamento.module';
 import { EnderecoModule } from './enderecos/endereco.module';
 import { TipoServicoModule } from './tipos-servico/tipo-servico.module';
 import { AdminModule } from './admin/admin.module';
+import { NotificacaoModule } from './notificacoes/notificacao.module';
 import { User } from './users/user.entity';
 import { Servico } from './servicos/servico.entity';
 import { Mensagem } from './chat/mensagem.entity';
 import { Pagamento } from './pagamentos/pagamento.entity';
 import { Endereco } from './enderecos/endereco.entity';
 import { TipoServico } from './tipos-servico/tipo-servico.entity';
+import { PushToken } from './notificacoes/push-token.entity';
 import { TipoServicoService } from './tipos-servico/tipo-servico.service';
 
 @Module({
@@ -24,7 +26,7 @@ import { TipoServicoService } from './tipos-servico/tipo-servico.service';
       useFactory: (config: ConfigService) => ({
         type: 'postgres',
         url: config.get('DATABASE_URL'),
-        entities: [User, Servico, Mensagem, Pagamento, Endereco, TipoServico],
+        entities: [User, Servico, Mensagem, Pagamento, Endereco, TipoServico, PushToken],
         synchronize: false,
         ssl: { rejectUnauthorized: false },
         logging: false,
@@ -39,6 +41,7 @@ import { TipoServicoService } from './tipos-servico/tipo-servico.service';
     EnderecoModule,
     TipoServicoModule,
     AdminModule,
+    NotificacaoModule,
   ],
   providers: [TipoServicoService],
 })

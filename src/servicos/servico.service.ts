@@ -6,6 +6,7 @@ import { Repository } from 'typeorm';
 import { Servico, StatusServico, TipoServico } from './servico.entity';
 import { User } from '../users/user.entity';
 import { Endereco } from '../enderecos/endereco.entity';
+import { NotificacaoService } from '../notificacoes/notificacao.service';
 import { IsString, IsNumber, IsOptional } from 'class-validator';
 
 export class CriarServicoDto {
@@ -27,6 +28,7 @@ export class ServicoService {
     @InjectRepository(Servico) private servicoRepo: Repository<Servico>,
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Endereco) private enderecoRepo: Repository<Endereco>,
+    private notificacaoService: NotificacaoService,
   ) {}
 
   async criar(clienteId: string, dto: CriarServicoDto): Promise<Servico> {
@@ -50,7 +52,17 @@ export class ServicoService {
       status: 'aguardando',
     });
 
-    return this.servicoRepo.save(servico);
+    const salvo = await this.servicoRepo.save(servico);
+
+    // Notifica todas as diaristas aprovadas sobre novo serviço
+    this.notificacaoService.enviarParaRole(
+      'diarista',
+      'Novo serviço disponível!',
+      'Um novo serviço está aguardando na sua região.',
+      { tipo: 'novo_servico', servicoId: salvo.id },
+    ).catch(() => {});
+
+    return salvo;
   }
 
   // ── Diarista: listar disponíveis (apenas aprovadas) ───────────────────────
@@ -79,7 +91,17 @@ export class ServicoService {
 
     servico.diaristaId = diaristaId;
     servico.status = 'aceito';
-    return this.servicoRepo.save(servico);
+    const salvo = await this.servicoRepo.save(servico);
+
+    // Notifica o cliente que a diarista aceitou
+    this.notificacaoService.enviarParaUsuario({
+      userId: servico.clienteId,
+      titulo: 'Diarista a caminho!',
+      corpo: `${diarista?.nome ?? 'Sua diarista'} aceitou o serviço.`,
+      dados: { tipo: 'servico_aceito', servicoId: id },
+    }).catch(() => {});
+
+    return salvo;
   }
 
   async aCaminho(id: string, diaristaId: string): Promise<Servico> {
@@ -97,7 +119,17 @@ export class ServicoService {
     if (servico.status !== 'aceito' && servico.status !== 'a_caminho')
       throw new BadRequestException('Status inválido para iniciar');
     servico.status = 'em_andamento';
-    return this.servicoRepo.save(servico);
+    const salvo = await this.servicoRepo.save(servico);
+
+    // Notifica o cliente que o serviço começou
+    this.notificacaoService.enviarParaUsuario({
+      userId: servico.clienteId,
+      titulo: 'Serviço iniciado!',
+      corpo: 'A diarista chegou e está trabalhando.',
+      dados: { tipo: 'servico_iniciado', servicoId: id },
+    }).catch(() => {});
+
+    return salvo;
   }
 
   async concluir(id: string, diaristaId: string): Promise<Servico> {
@@ -107,7 +139,17 @@ export class ServicoService {
       throw new BadRequestException('Serviço não está em andamento');
     servico.status = 'concluido';
     await this.userRepo.increment({ id: diaristaId }, 'servicosRealizados', 1);
-    return this.servicoRepo.save(servico);
+    const salvo = await this.servicoRepo.save(servico);
+
+    // Notifica o cliente que o serviço foi concluído
+    this.notificacaoService.enviarParaUsuario({
+      userId: servico.clienteId,
+      titulo: 'Serviço concluído!',
+      corpo: 'Tudo limpo! Avalie a diarista.',
+      dados: { tipo: 'servico_concluido', servicoId: id },
+    }).catch(() => {});
+
+    return salvo;
   }
 
   async cancelar(id: string, userId: string, motivo: string): Promise<Servico> {
