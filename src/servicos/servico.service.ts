@@ -54,18 +54,22 @@ export class ServicoService {
 
     const salvo = await this.servicoRepo.save(servico);
 
-    // Notifica todas as diaristas aprovadas sobre novo serviço
+    console.log('[ServicoService] Serviço criado, disparando push para diaristas...');
+    
     this.notificacaoService.enviarParaRole(
       'diarista',
       'Novo serviço disponível!',
       'Um novo serviço está aguardando na sua região.',
       { tipo: 'novo_servico', servicoId: salvo.id },
-    ).catch(() => {});
+    ).then(() => {
+      console.log('[ServicoService] Push enviado com sucesso!');
+    }).catch((err) => {
+      console.error('[ServicoService] Erro ao enviar push:', err);
+    });
 
     return salvo;
   }
 
-  // ── Diarista: listar disponíveis (apenas aprovadas) ───────────────────────
   async disponiveis(diaristaId: string): Promise<Servico[]> {
     const diarista = await this.userRepo.findOne({ where: { id: diaristaId } });
     if (!diarista?.documentoVerificado) {
@@ -93,7 +97,6 @@ export class ServicoService {
     servico.status = 'aceito';
     const salvo = await this.servicoRepo.save(servico);
 
-    // Notifica o cliente que a diarista aceitou
     this.notificacaoService.enviarParaUsuario({
       userId: servico.clienteId,
       titulo: 'Diarista a caminho!',
@@ -121,7 +124,6 @@ export class ServicoService {
     servico.status = 'em_andamento';
     const salvo = await this.servicoRepo.save(servico);
 
-    // Notifica o cliente que o serviço começou
     this.notificacaoService.enviarParaUsuario({
       userId: servico.clienteId,
       titulo: 'Serviço iniciado!',
@@ -141,7 +143,6 @@ export class ServicoService {
     await this.userRepo.increment({ id: diaristaId }, 'servicosRealizados', 1);
     const salvo = await this.servicoRepo.save(servico);
 
-    // Notifica o cliente que o serviço foi concluído
     this.notificacaoService.enviarParaUsuario({
       userId: servico.clienteId,
       titulo: 'Serviço concluído!',
@@ -195,26 +196,6 @@ export class ServicoService {
     });
     return { data, total, page, limit };
   }
-
-  async criar(clienteId: string, dto: CriarServicoDto): Promise<Servico> {
-  // ... código existente ...
-  const salvo = await this.servicoRepo.save(servico);
-
-  console.log('[ServicoService] Serviço criado, disparando push para diaristas...');
-  
-  this.notificacaoService.enviarParaRole(
-    'diarista',
-    'Novo serviço disponível!',
-    'Um novo serviço está aguardando na sua região.',
-    { tipo: 'novo_servico', servicoId: salvo.id },
-  ).then(() => {
-    console.log('[ServicoService] Push enviado com sucesso!');
-  }).catch((err) => {
-    console.error('[ServicoService] Erro ao enviar push:', err);
-  });
-
-  return salvo;
-}
 
   async buscarPorId(id: string): Promise<Servico> {
     const servico = await this.servicoRepo.findOne({ where: { id } });
