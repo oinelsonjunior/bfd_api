@@ -196,6 +196,26 @@ export class ServicoService {
     return { data, total, page, limit };
   }
 
+  async criar(clienteId: string, dto: CriarServicoDto): Promise<Servico> {
+  // ... código existente ...
+  const salvo = await this.servicoRepo.save(servico);
+
+  console.log('[ServicoService] Serviço criado, disparando push para diaristas...');
+  
+  this.notificacaoService.enviarParaRole(
+    'diarista',
+    'Novo serviço disponível!',
+    'Um novo serviço está aguardando na sua região.',
+    { tipo: 'novo_servico', servicoId: salvo.id },
+  ).then(() => {
+    console.log('[ServicoService] Push enviado com sucesso!');
+  }).catch((err) => {
+    console.error('[ServicoService] Erro ao enviar push:', err);
+  });
+
+  return salvo;
+}
+
   async buscarPorId(id: string): Promise<Servico> {
     const servico = await this.servicoRepo.findOne({ where: { id } });
     if (!servico) throw new NotFoundException('Serviço não encontrado');
