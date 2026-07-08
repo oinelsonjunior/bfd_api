@@ -24,6 +24,7 @@ export class InitialSchema1700000000000 implements MigrationInterface {
         "disponivel"          boolean NOT NULL DEFAULT false,
         "documentoVerificado" boolean NOT NULL DEFAULT false,
         "valorHora"           numeric(8,2),
+        "cpf"                 character varying,
         "pushToken"           character varying,
         "ativo"               boolean NOT NULL DEFAULT true,
         "fotoPerfil"          character varying,
