@@ -35,31 +35,50 @@ export class InitialSchema1700000000000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE TYPE "public"."servicos_tipo_enum" AS ENUM ('limpeza_basica', 'limpeza_completa', 'limpeza_pesada', 'pos_obra')
+      CREATE TABLE "enderecos" (
+        "id"          uuid NOT NULL DEFAULT uuid_generate_v4(),
+        "userId"      uuid NOT NULL,
+        "apelido"     character varying NOT NULL,
+        "cep"         character varying NOT NULL,
+        "logradouro"  character varying NOT NULL,
+        "numero"      character varying NOT NULL,
+        "complemento" character varying,
+        "bairro"      character varying NOT NULL,
+        "cidade"      character varying NOT NULL,
+        "estado"      character varying(2) NOT NULL,
+        "latitude"    numeric(10,7),
+        "longitude"   numeric(10,7),
+        "createdAt"   TIMESTAMP NOT NULL DEFAULT now(),
+        CONSTRAINT "PK_enderecos" PRIMARY KEY ("id")
+      )
     `);
 
     await queryRunner.query(`
-      CREATE TYPE "public"."servicos_status_enum" AS ENUM ('pendente', 'aceito', 'a_caminho', 'em_andamento', 'concluido', 'cancelado')
+      CREATE TYPE "public"."servicos_tipo_enum" AS ENUM ('limpeza_basica', 'limpeza_completa', 'limpeza_pos_obra', 'passar_roupa', 'organizar')
+    `);
+
+    await queryRunner.query(`
+      CREATE TYPE "public"."servicos_status_enum" AS ENUM ('aguardando', 'matching', 'aceito', 'a_caminho', 'em_andamento', 'concluido', 'cancelado')
     `);
 
     await queryRunner.query(`
       CREATE TABLE "servicos" (
-        "id"                  uuid NOT NULL DEFAULT uuid_generate_v4(),
-        "clienteId"           uuid NOT NULL,
-        "diaristaId"          uuid,
-        "tipo"                "public"."servicos_tipo_enum" NOT NULL,
-        "status"              "public"."servicos_status_enum" NOT NULL DEFAULT 'pendente',
-        "dataAgendada"        TIMESTAMP NOT NULL,
-        "horasContratadas"    integer NOT NULL DEFAULT 4,
-        "valorTotal"          numeric(8,2) NOT NULL,
-        "observacoes"         text,
-        "enderecoId"          uuid,
-        "avaliacaoCliente"    integer,
-        "avaliacaoDiarista"   integer,
-        "comentarioCliente"   text,
-        "comentarioDiarista"  text,
-        "createdAt"           TIMESTAMP NOT NULL DEFAULT now(),
-        "updatedAt"           TIMESTAMP NOT NULL DEFAULT now(),
+        "id"                   uuid NOT NULL DEFAULT uuid_generate_v4(),
+        "clienteId"            uuid NOT NULL,
+        "diaristaId"           uuid,
+        "tipo"                 "public"."servicos_tipo_enum" NOT NULL,
+        "descricao"            text,
+        "enderecoId"           uuid NOT NULL,
+        "dataAgendada"         TIMESTAMP WITH TIME ZONE NOT NULL,
+        "horasEstimadas"       integer NOT NULL,
+        "status"               "public"."servicos_status_enum" NOT NULL DEFAULT 'aguardando',
+        "valorTotal"           numeric(8,2) NOT NULL,
+        "valorHora"            numeric(8,2) NOT NULL,
+        "motivoCancelamento"   character varying,
+        "avaliacaoNota"        integer,
+        "avaliacaoComentario"  text,
+        "createdAt"            TIMESTAMP NOT NULL DEFAULT now(),
+        "updatedAt"            TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "PK_servicos" PRIMARY KEY ("id")
       )
     `);
@@ -102,25 +121,6 @@ export class InitialSchema1700000000000 implements MigrationInterface {
     `);
 
     await queryRunner.query(`
-      CREATE TABLE "enderecos" (
-        "id"          uuid NOT NULL DEFAULT uuid_generate_v4(),
-        "userId"      uuid NOT NULL,
-        "apelido"     character varying NOT NULL,
-        "cep"         character varying NOT NULL,
-        "logradouro"  character varying NOT NULL,
-        "numero"      character varying NOT NULL,
-        "complemento" character varying,
-        "bairro"      character varying NOT NULL,
-        "cidade"      character varying NOT NULL,
-        "estado"      character varying(2) NOT NULL,
-        "latitude"    numeric(10,7),
-        "longitude"   numeric(10,7),
-        "createdAt"   TIMESTAMP NOT NULL DEFAULT now(),
-        CONSTRAINT "PK_enderecos" PRIMARY KEY ("id")
-      )
-    `);
-
-    await queryRunner.query(`
       CREATE TABLE "tipos_servico" (
         "id"           uuid NOT NULL DEFAULT uuid_generate_v4(),
         "codigo"       character varying NOT NULL,
@@ -155,31 +155,33 @@ export class InitialSchema1700000000000 implements MigrationInterface {
       )
     `);
 
+    await queryRunner.query(`ALTER TABLE "enderecos" ADD CONSTRAINT "FK_enderecos_user" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "servicos" ADD CONSTRAINT "FK_servicos_cliente" FOREIGN KEY ("clienteId") REFERENCES "users"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "servicos" ADD CONSTRAINT "FK_servicos_diarista" FOREIGN KEY ("diaristaId") REFERENCES "users"("id") ON DELETE SET NULL`);
+    await queryRunner.query(`ALTER TABLE "servicos" ADD CONSTRAINT "FK_servicos_endereco" FOREIGN KEY ("enderecoId") REFERENCES "enderecos"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "mensagens" ADD CONSTRAINT "FK_mensagens_servico" FOREIGN KEY ("servicoId") REFERENCES "servicos"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "mensagens" ADD CONSTRAINT "FK_mensagens_remetente" FOREIGN KEY ("remetenteId") REFERENCES "users"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "pagamentos" ADD CONSTRAINT "FK_pagamentos_servico" FOREIGN KEY ("servicoId") REFERENCES "servicos"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "pagamentos" ADD CONSTRAINT "FK_pagamentos_user" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE`);
-    await queryRunner.query(`ALTER TABLE "enderecos" ADD CONSTRAINT "FK_enderecos_user" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "push_tokens" ADD CONSTRAINT "FK_push_tokens_user" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`ALTER TABLE "push_tokens" DROP CONSTRAINT "FK_push_tokens_user"`);
-    await queryRunner.query(`ALTER TABLE "enderecos" DROP CONSTRAINT "FK_enderecos_user"`);
     await queryRunner.query(`ALTER TABLE "pagamentos" DROP CONSTRAINT "FK_pagamentos_user"`);
     await queryRunner.query(`ALTER TABLE "pagamentos" DROP CONSTRAINT "FK_pagamentos_servico"`);
     await queryRunner.query(`ALTER TABLE "mensagens" DROP CONSTRAINT "FK_mensagens_remetente"`);
     await queryRunner.query(`ALTER TABLE "mensagens" DROP CONSTRAINT "FK_mensagens_servico"`);
+    await queryRunner.query(`ALTER TABLE "servicos" DROP CONSTRAINT "FK_servicos_endereco"`);
     await queryRunner.query(`ALTER TABLE "servicos" DROP CONSTRAINT "FK_servicos_diarista"`);
     await queryRunner.query(`ALTER TABLE "servicos" DROP CONSTRAINT "FK_servicos_cliente"`);
+    await queryRunner.query(`ALTER TABLE "enderecos" DROP CONSTRAINT "FK_enderecos_user"`);
     await queryRunner.query(`DROP TABLE "push_tokens"`);
     await queryRunner.query(`DROP TABLE "tipos_servico"`);
-    await queryRunner.query(`DROP TABLE "enderecos"`);
     await queryRunner.query(`DROP TABLE "pagamentos"`);
     await queryRunner.query(`DROP TABLE "mensagens"`);
     await queryRunner.query(`DROP TABLE "servicos"`);
+    await queryRunner.query(`DROP TABLE "enderecos"`);
     await queryRunner.query(`DROP TABLE "users"`);
     await queryRunner.query(`DROP TYPE "public"."push_tokens_plataforma_enum"`);
     await queryRunner.query(`DROP TYPE "public"."pagamentos_status_enum"`);
