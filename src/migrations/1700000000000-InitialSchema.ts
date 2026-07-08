@@ -105,14 +105,16 @@ export class InitialSchema1700000000000 implements MigrationInterface {
       CREATE TABLE "enderecos" (
         "id"          uuid NOT NULL DEFAULT uuid_generate_v4(),
         "userId"      uuid NOT NULL,
+        "apelido"     character varying NOT NULL,
         "cep"         character varying NOT NULL,
         "logradouro"  character varying NOT NULL,
         "numero"      character varying NOT NULL,
         "complemento" character varying,
         "bairro"      character varying NOT NULL,
         "cidade"      character varying NOT NULL,
-        "estado"      character varying NOT NULL,
-        "principal"   boolean NOT NULL DEFAULT false,
+        "estado"      character varying(2) NOT NULL,
+        "latitude"    numeric(10,7),
+        "longitude"   numeric(10,7),
         "createdAt"   TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "PK_enderecos" PRIMARY KEY ("id")
       )
