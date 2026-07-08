@@ -10,16 +10,25 @@ export class InitialSchema1700000000000 implements MigrationInterface {
 
     await queryRunner.query(`
       CREATE TABLE "users" (
-        "id"         uuid NOT NULL DEFAULT uuid_generate_v4(),
-        "nome"       character varying NOT NULL,
-        "email"      character varying NOT NULL,
-        "senha"      character varying NOT NULL,
-        "role"       "public"."users_role_enum" NOT NULL DEFAULT 'cliente',
-        "telefone"   character varying,
-        "fotoPerfil" character varying,
-        "ativo"      boolean NOT NULL DEFAULT true,
-        "createdAt"  TIMESTAMP NOT NULL DEFAULT now(),
-        "updatedAt"  TIMESTAMP NOT NULL DEFAULT now(),
+        "id"                  uuid NOT NULL DEFAULT uuid_generate_v4(),
+        "nome"                character varying NOT NULL,
+        "email"               character varying NOT NULL,
+        "senha"               character varying NOT NULL,
+        "telefone"            character varying NOT NULL,
+        "foto"                character varying,
+        "role"                "public"."users_role_enum" NOT NULL DEFAULT 'cliente',
+        "descricao"           text,
+        "avaliacaoMedia"      numeric(3,2) NOT NULL DEFAULT 0,
+        "totalAvaliacoes"     integer NOT NULL DEFAULT 0,
+        "servicosRealizados"  integer NOT NULL DEFAULT 0,
+        "disponivel"          boolean NOT NULL DEFAULT false,
+        "documentoVerificado" boolean NOT NULL DEFAULT false,
+        "valorHora"           numeric(8,2),
+        "pushToken"           character varying,
+        "ativo"               boolean NOT NULL DEFAULT true,
+        "fotoPerfil"          character varying,
+        "createdAt"           TIMESTAMP NOT NULL DEFAULT now(),
+        "updatedAt"           TIMESTAMP NOT NULL DEFAULT now(),
         CONSTRAINT "UQ_users_email" UNIQUE ("email"),
         CONSTRAINT "PK_users" PRIMARY KEY ("id")
       )
@@ -127,6 +136,23 @@ export class InitialSchema1700000000000 implements MigrationInterface {
       )
     `);
 
+    await queryRunner.query(`
+      CREATE TYPE "public"."push_tokens_plataforma_enum" AS ENUM ('ios', 'android', 'web')
+    `);
+
+    await queryRunner.query(`
+      CREATE TABLE "push_tokens" (
+        "id"         uuid NOT NULL DEFAULT uuid_generate_v4(),
+        "userId"     uuid NOT NULL,
+        "token"      character varying NOT NULL,
+        "plataforma" "public"."push_tokens_plataforma_enum" NOT NULL,
+        "createdAt"  TIMESTAMP NOT NULL DEFAULT now(),
+        "updatedAt"  TIMESTAMP NOT NULL DEFAULT now(),
+        CONSTRAINT "UQ_push_tokens_user_plataforma" UNIQUE ("userId", "plataforma"),
+        CONSTRAINT "PK_push_tokens" PRIMARY KEY ("id")
+      )
+    `);
+
     await queryRunner.query(`ALTER TABLE "servicos" ADD CONSTRAINT "FK_servicos_cliente" FOREIGN KEY ("clienteId") REFERENCES "users"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "servicos" ADD CONSTRAINT "FK_servicos_diarista" FOREIGN KEY ("diaristaId") REFERENCES "users"("id") ON DELETE SET NULL`);
     await queryRunner.query(`ALTER TABLE "mensagens" ADD CONSTRAINT "FK_mensagens_servico" FOREIGN KEY ("servicoId") REFERENCES "servicos"("id") ON DELETE CASCADE`);
@@ -134,9 +160,11 @@ export class InitialSchema1700000000000 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "pagamentos" ADD CONSTRAINT "FK_pagamentos_servico" FOREIGN KEY ("servicoId") REFERENCES "servicos"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "pagamentos" ADD CONSTRAINT "FK_pagamentos_user" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE`);
     await queryRunner.query(`ALTER TABLE "enderecos" ADD CONSTRAINT "FK_enderecos_user" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE`);
+    await queryRunner.query(`ALTER TABLE "push_tokens" ADD CONSTRAINT "FK_push_tokens_user" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE`);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`ALTER TABLE "push_tokens" DROP CONSTRAINT "FK_push_tokens_user"`);
     await queryRunner.query(`ALTER TABLE "enderecos" DROP CONSTRAINT "FK_enderecos_user"`);
     await queryRunner.query(`ALTER TABLE "pagamentos" DROP CONSTRAINT "FK_pagamentos_user"`);
     await queryRunner.query(`ALTER TABLE "pagamentos" DROP CONSTRAINT "FK_pagamentos_servico"`);
@@ -144,12 +172,14 @@ export class InitialSchema1700000000000 implements MigrationInterface {
     await queryRunner.query(`ALTER TABLE "mensagens" DROP CONSTRAINT "FK_mensagens_servico"`);
     await queryRunner.query(`ALTER TABLE "servicos" DROP CONSTRAINT "FK_servicos_diarista"`);
     await queryRunner.query(`ALTER TABLE "servicos" DROP CONSTRAINT "FK_servicos_cliente"`);
+    await queryRunner.query(`DROP TABLE "push_tokens"`);
     await queryRunner.query(`DROP TABLE "tipos_servico"`);
     await queryRunner.query(`DROP TABLE "enderecos"`);
     await queryRunner.query(`DROP TABLE "pagamentos"`);
     await queryRunner.query(`DROP TABLE "mensagens"`);
     await queryRunner.query(`DROP TABLE "servicos"`);
     await queryRunner.query(`DROP TABLE "users"`);
+    await queryRunner.query(`DROP TYPE "public"."push_tokens_plataforma_enum"`);
     await queryRunner.query(`DROP TYPE "public"."pagamentos_status_enum"`);
     await queryRunner.query(`DROP TYPE "public"."pagamentos_metodo_enum"`);
     await queryRunner.query(`DROP TYPE "public"."servicos_status_enum"`);
