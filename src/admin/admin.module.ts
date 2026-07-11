@@ -5,6 +5,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { Servico } from '../servicos/servico.entity';
+import { Pagamento } from '../pagamentos/pagamento.entity';
 import { UploadModule } from '../upload/upload.module';
 
 @Controller('admin')
@@ -69,7 +70,7 @@ export class AdminController {
 }
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Servico]), UploadModule],
+  imports: [TypeOrmModule.forFeature([User, Servico, Pagamento]), UploadModule],
   controllers: [AdminController],
   providers: [AdminService],
 })

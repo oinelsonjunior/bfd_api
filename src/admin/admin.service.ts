@@ -4,12 +4,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Servico } from '../servicos/servico.entity';
+import { Pagamento } from '../pagamentos/pagamento.entity';
 
 @Injectable()
 export class AdminService {
   constructor(
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Servico) private servicoRepo: Repository<Servico>,
+    @InjectRepository(Pagamento) private pagamentoRepo: Repository<Pagamento>,
     private uploadService: UploadService,
   ) {}
 
@@ -95,5 +97,28 @@ export class AdminService {
     const hash = await bcrypt.hash(senha, 12);
     const admin = this.userRepo.create({ nome: 'Administrador', email, senha: hash, telefone: '00000000000', role: 'admin' as any, ativo: true });
     return this.userRepo.save(admin);
+  }
+
+  async pagamentos() {
+    return this.pagamentoRepo.find({
+      order: { createdAt: 'DESC' },
+      relations: ['servico'],
+    });
+  }
+
+  async cancelarServico(id: string) {
+    const servico = await this.servicoRepo.findOne({ where: { id } });
+    if (!servico) throw new Error('Serviço não encontrado');
+    servico.status = 'cancelado' as any;
+    return this.servicoRepo.save(servico);
+  }
+
+  async enviarPushGeral(titulo: string, mensagem: string, role: string) {
+    return this.notificacaoService.enviarParaRole(
+      role as any,
+      titulo,
+      mensagem,
+      { tipo: 'admin_push' },
+    );
   }
 }
