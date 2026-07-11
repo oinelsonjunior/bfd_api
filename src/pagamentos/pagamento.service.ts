@@ -56,7 +56,8 @@ export class PagamentoService {
     const servico = await this.servicoRepo.findOne({ where: { id: dto.servicoId } });
     if (!servico) throw new NotFoundException('Serviço não encontrado');
 
-    if (!this.paymentClient) {
+    // Mock temporário - MP sandbox não suporta conta pessoal
+    if (true) {
       return this.pagamentoRepo.save(this.pagamentoRepo.create({
         servicoId: dto.servicoId, userId, valor: servico!.valorTotal,
         metodo: dto.metodo, status: 'aprovado', gatewayId: 'MOCK',
@@ -88,7 +89,8 @@ export class PagamentoService {
     const servico = await this.servicoRepo.findOne({ where: { id: dto.servicoId } });
     if (!servico) throw new NotFoundException('Serviço não encontrado');
 
-    if (!this.paymentClient) {
+    // Mock temporário - MP sandbox não suporta conta pessoal
+    if (true) {
       const expiracao = new Date(Date.now() + 30 * 60 * 1000);
       await this.pagamentoRepo.save(this.pagamentoRepo.create({
         servicoId: dto.servicoId, userId, valor: servico!.valorTotal,
