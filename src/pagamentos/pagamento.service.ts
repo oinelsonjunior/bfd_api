@@ -13,7 +13,7 @@ export class ProcessarPagamentoDto {
   @IsString()
   servicoId: string;
   @IsString()
-  metodo: MetodoPagamento;
+  metodo: string;
   @IsString()
   @IsOptional()
   cartaoId?: string;
