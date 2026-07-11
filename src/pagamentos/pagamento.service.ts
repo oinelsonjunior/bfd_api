@@ -47,7 +47,7 @@ export class PagamentoService {
 
     if (!this.paymentClient) {
       return this.pagamentoRepo.save(this.pagamentoRepo.create({
-        servicoId: dto.servicoId, userId, valor: servico.valorTotal,
+        servicoId: dto.servicoId, userId, valor: servico!.valorTotal,
         metodo: dto.metodo, status: 'aprovado', gatewayId: 'MOCK',
       }));
     }
@@ -64,7 +64,7 @@ export class PagamentoService {
         }
       });
       return this.pagamentoRepo.save(this.pagamentoRepo.create({
-        servicoId: dto.servicoId, userId, valor: servico.valorTotal,
+        servicoId: dto.servicoId, userId, valor: servico!.valorTotal,
         metodo: dto.metodo, status: this.mapearStatus(payment.status || "pending"),
         gatewayId: String(payment.id),
       }));
@@ -80,7 +80,7 @@ export class PagamentoService {
     if (!this.paymentClient) {
       const expiracao = new Date(Date.now() + 30 * 60 * 1000);
       await this.pagamentoRepo.save(this.pagamentoRepo.create({
-        servicoId: dto.servicoId, userId, valor: servico.valorTotal,
+        servicoId: dto.servicoId, userId, valor: servico!.valorTotal,
         metodo: 'pix', status: 'pendente', gatewayId: 'MOCK',
         pixQrCode: undefined,
         pixCopiaCola: `00020126330014BR.GOV.BCB.PIX0111${Date.now()}5204000053039865802BR5925BEM FEITO DIARISTAS6009SAO PAULO62070503***6304`,
@@ -90,7 +90,7 @@ export class PagamentoService {
         qrCode: null,
         copiaCola: `00020126330014BR.GOV.BCB.PIX0111${Date.now()}5204000053039865802BR5925BEM FEITO DIARISTAS6009SAO PAULO62070503***6304`,
         expiracao,
-        valor: servico.valorTotal,
+        valor: servico!.valorTotal,
       };
     }
 
@@ -131,7 +131,7 @@ export class PagamentoService {
       const expiracao = new Date(payment.date_of_expiration || Date.now() + 30 * 60 * 1000);
 
       await this.pagamentoRepo.save(this.pagamentoRepo.create({
-        servicoId: dto.servicoId, userId, valor: servico.valorTotal,
+        servicoId: dto.servicoId, userId, valor: servico!.valorTotal,
         metodo: 'pix', status: 'pendente', gatewayId: String(payment.id),
         pixQrCode: pixData?.qr_code_base64,
         pixCopiaCola: pixData?.qr_code,
@@ -142,7 +142,7 @@ export class PagamentoService {
         qrCode: pixData?.qr_code_base64,
         copiaCola: pixData?.qr_code,
         expiracao,
-        valor: servico.valorTotal,
+        valor: servico!.valorTotal,
       };
     } catch (error: any) {
       console.error('[PagamentoService] Erro ao gerar PIX:', error);
