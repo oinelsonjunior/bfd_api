@@ -6,6 +6,8 @@ import { ConfigService } from '@nestjs/config';
 import { Pagamento, MetodoPagamento } from './pagamento.entity';
 import { Servico } from '../servicos/servico.entity';
 import { MercadoPagoConfig, Payment } from 'mercadopago';
+import { InjectRepository as Inject2 } from '@nestjs/typeorm';
+import { User } from '../users/user.entity';
 
 export class ProcessarPagamentoDto {
   servicoId: string;
@@ -93,6 +95,9 @@ export class PagamentoService {
         pixCopiaCola: `00020126330014BR.GOV.BCB.PIX0111${Date.now()}5204000053039865802BR5925BEM FEITO DIARISTAS6009SAO PAULO62070503***6304`,
         pixExpiracao: expiracao,
       }));
+      // Mudar status para matching após pagamento
+      await this.servicoRepo.update(dto.servicoId, { status: 'matching' } as any);
+      console.log('[PagamentoService] Serviço atualizado para matching');
       return {
         qrCode: null,
         copiaCola: `00020126330014BR.GOV.BCB.PIX0111${Date.now()}5204000053039865802BR5925BEM FEITO DIARISTAS6009SAO PAULO62070503***6304`,
