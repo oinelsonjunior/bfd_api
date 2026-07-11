@@ -52,21 +52,6 @@ export class ServicoService {
       status: 'aguardando',
     });
 
-    const salvo = await this.servicoRepo.save(servico);
-
-    console.log('[ServicoService] Serviço criado, disparando push para diaristas...');
-    
-    this.notificacaoService.enviarParaRole(
-      'diarista',
-      'Novo serviço disponível!',
-      'Um novo serviço está aguardando na sua região.',
-      { tipo: 'novo_servico', servicoId: salvo.id },
-    ).then(() => {
-      console.log('[ServicoService] Push enviado com sucesso!');
-    }).catch((err) => {
-      console.error('[ServicoService] Erro ao enviar push:', err);
-    });
-
     return salvo;
   }
 
