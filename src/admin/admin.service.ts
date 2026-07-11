@@ -81,8 +81,9 @@ export class AdminService {
       .getRawOne();
 
     const receitaTotal = parseFloat(receitaResult?.total ?? '0');
-
-    return { totalClientes, totalDiaristas, diaristasNaoAprovadas, totalServicos, servicosConcluidos, receitaTotal };
+    const servicosAtivos = await this.servicoRepo.count({ where: [{ status: 'matching' as any }, { status: 'aceito' as any }, { status: 'a_caminho' as any }, { status: 'em_andamento' as any }]});
+    const ultimosServicos = await this.servicoRepo.find({ order: { createdAt: 'DESC' }, take: 10, relations: ['cliente'] });
+    return { totalClientes, totalDiaristas, diaristasPendentes: diaristasNaoAprovadas, totalServicos, servicosConcluidos, servicosAtivos, receitaTotal, ultimosServicos };
   }
 
   async uploadFotoDiarista(id: string, base64: string): Promise<User> {
