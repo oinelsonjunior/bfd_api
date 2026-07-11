@@ -12,6 +12,7 @@ export class AdminService {
     @InjectRepository(User) private userRepo: Repository<User>,
     @InjectRepository(Servico) private servicoRepo: Repository<Servico>,
     @InjectRepository(Pagamento) private pagamentoRepo: Repository<Pagamento>,
+    private notificacaoService: NotificacaoService,
     private uploadService: UploadService,
   ) {}
 

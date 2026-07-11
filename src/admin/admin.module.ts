@@ -2,6 +2,7 @@ import { Controller, Get, Post, Patch, Body, Param, Query, UseGuards } from '@ne
 import { AdminService } from './admin.service';
 import { JwtAuthGuard, RolesGuard, Roles } from '../common/guards/jwt-auth.guard';
 import { Module } from '@nestjs/common';
+import { NotificacaoModule } from '../notificacoes/notificacao.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 import { Servico } from '../servicos/servico.entity';
@@ -70,7 +71,8 @@ export class AdminController {
 }
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User, Servico, Pagamento]), UploadModule],
+  imports: [TypeOrmModule.forFeature([User, Servico, Pagamento]),
+    NotificacaoModule, UploadModule],
   controllers: [AdminController],
   providers: [AdminService],
 })
