@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { IsString, IsOptional } from 'class-validator';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
@@ -15,9 +16,15 @@ export class ProcessarPagamentoDto {
 }
 
 export class GerarPixDto {
+  @IsString()
   servicoId: string;
+  @IsString()
   email: string;
+  @IsString()
+  @IsOptional()
   cpf: string;
+  @IsString()
+  @IsOptional()
   nomeCompleto: string;
 }
 
