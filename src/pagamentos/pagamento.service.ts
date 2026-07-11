@@ -12,10 +12,19 @@ import { User } from '../users/user.entity';
 export class ProcessarPagamentoDto {
   @IsString()
   servicoId: string;
+  @IsString()
   metodo: MetodoPagamento;
+  @IsString()
+  @IsOptional()
   cartaoId?: string;
+  @IsString()
+  @IsOptional()
   token?: string;
+  @IsString()
+  @IsOptional()
   email?: string;
+  @IsString()
+  @IsOptional()
   bandeira?: string;
 }
 
