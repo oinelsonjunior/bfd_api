@@ -51,6 +51,7 @@ export class ServicoService {
       valorTotal,
       status: 'aguardando',
     });
+    const salvo = await this.servicoRepo.save(servico);
 
     return salvo;
   }
