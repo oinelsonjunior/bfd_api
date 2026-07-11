@@ -69,7 +69,7 @@ export class PagamentoService {
     if (true) {
       return this.pagamentoRepo.save(this.pagamentoRepo.create({
         servicoId: dto.servicoId, userId, valor: servico!.valorTotal,
-        metodo: dto.metodo, status: 'aprovado', gatewayId: 'MOCK',
+        metodo: dto.metodo as any, status: 'aprovado', gatewayId: 'MOCK',
       }));
     }
 
