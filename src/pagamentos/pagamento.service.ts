@@ -86,7 +86,7 @@ export class PagamentoService {
       });
       return this.pagamentoRepo.save(this.pagamentoRepo.create({
         servicoId: dto.servicoId, userId, valor: servico!.valorTotal,
-        metodo: dto.metodo, status: this.mapearStatus(payment.status || "pending"),
+        metodo: dto.metodo as any, status: this.mapearStatus(payment.status || "pending"),
         gatewayId: String(payment.id),
       }));
     } catch (error: any) {
