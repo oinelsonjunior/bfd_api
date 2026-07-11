@@ -65,7 +65,7 @@ export class PagamentoService {
       });
       return this.pagamentoRepo.save(this.pagamentoRepo.create({
         servicoId: dto.servicoId, userId, valor: servico.valorTotal,
-        metodo: dto.metodo, status: this.mapearStatus(payment.status),
+        metodo: dto.metodo, status: this.mapearStatus(payment.status || "pending"),
         gatewayId: String(payment.id),
       }));
     } catch (error: any) {
@@ -139,7 +139,7 @@ export class PagamentoService {
         const payment = await this.paymentClient.get({ id: data.data.id });
         const pagamento = await this.pagamentoRepo.findOne({ where: { gatewayId: String(payment.id) } });
         if (pagamento) {
-          pagamento.status = this.mapearStatus(payment.status);
+          pagamento.status = this.mapearStatus(payment.status || "pending");
           await this.pagamentoRepo.save(pagamento);
         }
       }
