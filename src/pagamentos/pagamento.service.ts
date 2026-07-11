@@ -101,7 +101,7 @@ export class PagamentoService {
           description: `Serviço de limpeza`,
           payment_method_id: 'pix',
           payer: {
-            email: dto.email,
+            email: dto.email || 'test_user_123456789@testuser.com',
             first_name: (dto.nomeCompleto || 'Cliente').split(' ')[0],
             last_name: (dto.nomeCompleto || '').split(' ').slice(1).join(' ') || '-',
             identification: { type: 'CPF', number: (dto.cpf || '12345678909').replace(/\D/g, '') },
