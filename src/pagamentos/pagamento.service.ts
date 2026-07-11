@@ -65,9 +65,9 @@ export class PagamentoService {
     }
 
     try {
-      const payment = await this.paymentClient.create({
+      const payment = await this.paymentClient!.create({
         body: {
-          transaction_amount: Number(servico.valorTotal),
+          transaction_amount: Number(servico!.valorTotal),
           token: dto.token,
           description: `Serviço de limpeza`,
           installments: 1,
