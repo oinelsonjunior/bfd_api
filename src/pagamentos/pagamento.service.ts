@@ -45,7 +45,7 @@ export class PagamentoService {
     const servico = await this.servicoRepo.findOne({ where: { id: dto.servicoId } });
     if (!servico) throw new NotFoundException('Serviço não encontrado');
 
-    if (true) { // PIX via MP requer conta PJ - usando mock em desenvolvimento
+    if (!this.paymentClient) {
       return this.pagamentoRepo.save(this.pagamentoRepo.create({
         servicoId: dto.servicoId, userId, valor: servico.valorTotal,
         metodo: dto.metodo, status: 'aprovado', gatewayId: 'MOCK',
@@ -94,10 +94,28 @@ export class PagamentoService {
       };
     }
 
+    // PIX via MP sandbox requer conta PJ - usando mock
+    if (true) {
+      const expiracao = new Date(Date.now() + 30 * 60 * 1000);
+      await this.pagamentoRepo.save(this.pagamentoRepo.create({
+        servicoId: dto.servicoId, userId, valor: servico!.valorTotal,
+        metodo: 'pix', status: 'pendente', gatewayId: 'MOCK',
+        pixQrCode: undefined,
+        pixCopiaCola: `00020126330014BR.GOV.BCB.PIX0111${Date.now()}5204000053039865802BR5925BEM FEITO DIARISTAS6009SAO PAULO62070503***6304`,
+        pixExpiracao: expiracao,
+      }));
+      return {
+        qrCode: null,
+        copiaCola: `00020126330014BR.GOV.BCB.PIX0111${Date.now()}5204000053039865802BR5925BEM FEITO DIARISTAS6009SAO PAULO62070503***6304`,
+        expiracao,
+        valor: servico!.valorTotal,
+      };
+    }
+
     try {
-      const payment = await this.paymentClient.create({
+      const payment = await this.paymentClient!.create({
         body: {
-          transaction_amount: Number(servico.valorTotal),
+          transaction_amount: Number(servico!.valorTotal),
           description: `Serviço de limpeza`,
           payment_method_id: 'pix',
           payer: {
