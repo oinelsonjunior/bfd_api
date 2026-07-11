@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { User } from '../users/user.entity';
 import { Servico } from '../servicos/servico.entity';
 import { Pagamento } from '../pagamentos/pagamento.entity';
+import { NotificacaoService } from '../notificacoes/notificacao.service';
 
 @Injectable()
 export class AdminService {
