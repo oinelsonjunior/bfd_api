@@ -82,7 +82,7 @@ export class PagamentoService {
       await this.pagamentoRepo.save(this.pagamentoRepo.create({
         servicoId: dto.servicoId, userId, valor: servico.valorTotal,
         metodo: 'pix', status: 'pendente', gatewayId: 'MOCK',
-        pixQrCode: null,
+        pixQrCode: undefined,
         pixCopiaCola: `00020126330014BR.GOV.BCB.PIX0111${Date.now()}5204000053039865802BR5925BEM FEITO DIARISTAS6009SAO PAULO62070503***6304`,
         pixExpiracao: expiracao,
       }));
