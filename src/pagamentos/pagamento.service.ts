@@ -10,11 +10,13 @@ import { InjectRepository as Inject2 } from '@nestjs/typeorm';
 import { User } from '../users/user.entity';
 
 export class ProcessarPagamentoDto {
+  @IsString()
   servicoId: string;
   metodo: MetodoPagamento;
   cartaoId?: string;
   token?: string;
   email?: string;
+  bandeira?: string;
 }
 
 export class GerarPixDto {
@@ -68,7 +70,7 @@ export class PagamentoService {
           token: dto.token,
           description: `Serviço de limpeza`,
           installments: 1,
-          payment_method_id: 'visa',
+          payment_method_id: dto.bandeira || 'master',
           payer: { email: dto.email || 'cliente@bfd.com' },
         }
       });
