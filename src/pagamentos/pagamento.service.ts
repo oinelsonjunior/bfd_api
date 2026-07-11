@@ -102,8 +102,8 @@ export class PagamentoService {
           payment_method_id: 'pix',
           payer: {
             email: dto.email,
-            first_name: dto.nomeCompleto.split(' ')[0],
-            last_name: dto.nomeCompleto.split(' ').slice(1).join(' ') || '-',
+            first_name: (dto.nomeCompleto || 'Cliente').split(' ')[0],
+            last_name: (dto.nomeCompleto || '').split(' ').slice(1).join(' ') || '-',
             identification: { type: 'CPF', number: dto.cpf.replace(/\D/g, '') },
           },
         }
