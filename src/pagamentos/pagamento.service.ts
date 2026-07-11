@@ -104,7 +104,7 @@ export class PagamentoService {
             email: dto.email,
             first_name: (dto.nomeCompleto || 'Cliente').split(' ')[0],
             last_name: (dto.nomeCompleto || '').split(' ').slice(1).join(' ') || '-',
-            identification: { type: 'CPF', number: dto.cpf.replace(/\D/g, '') },
+            identification: { type: 'CPF', number: (dto.cpf || '12345678909').replace(/\D/g, '') },
           },
         }
       });
