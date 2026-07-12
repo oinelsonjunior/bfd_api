@@ -177,7 +177,7 @@ export class AdminService {
     return {
       receitaBruta, comissaoPlataforma, repasseDiaristas,
       totalServicos, ticketMedio, cancelados,
-      taxaCancelamento: totalServicos > 0 ? (cancelados / (totalServicos + cancelados) * 100).toFixed(1) : '0',
+      taxaCancelamento: (totalServicos + cancelados) > 0 ? (cancelados / (totalServicos + cancelados) * 100).toFixed(1) : '0',
       porDiarista: Object.values(porDiarista).sort((a: any, b: any) => b.receitaGerada - a.receitaGerada),
       porTipo: Object.values(porTipo).sort((a: any, b: any) => b.receita - a.receita),
     };
