@@ -21,7 +21,9 @@ export class AdminController {
   @Get('dashboard')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin' as any)
-  dashboard() { return this.adminService.dashboard(); }
+  dashboard(@Query('dataInicio') dataInicio?: string, @Query('dataFim') dataFim?: string) {
+    return this.adminService.dashboard(dataInicio, dataFim);
+  }
 
   @Get('diaristas')
   @UseGuards(JwtAuthGuard, RolesGuard)
