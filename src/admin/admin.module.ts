@@ -80,6 +80,14 @@ export class AdminController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin' as any)
   listarServicos() { return this.adminService.listarServicos(); }
+  @Get('clientes/:id/servicos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  servicosCliente(@Param('id') id: string) { return this.adminService.servicosCliente(id); }
+  @Get('diaristas/:id/servicos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  servicosDiarista(@Param('id') id: string) { return this.adminService.servicosDiarista(id); }
 }
 
 @Module({

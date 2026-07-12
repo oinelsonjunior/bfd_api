@@ -102,6 +102,22 @@ export class AdminService {
     return this.userRepo.save(admin);
   }
 
+  async servicosCliente(clienteId: string) {
+    return this.servicoRepo.find({
+      where: { clienteId },
+      order: { createdAt: 'DESC' },
+      relations: ['diarista', 'endereco'],
+    });
+  }
+
+  async servicosDiarista(diaristaId: string) {
+    return this.servicoRepo.find({
+      where: { diaristaId },
+      order: { createdAt: 'DESC' },
+      relations: ['cliente', 'endereco'],
+    });
+  }
+
   async pagamentos() {
     return this.pagamentoRepo.find({
       order: { createdAt: 'DESC' },
