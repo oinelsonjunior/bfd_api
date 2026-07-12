@@ -65,7 +65,7 @@ export class AdminService {
     });
   }
 
-  async dashboard() {
+  async dashboard(dataInicio?: string, dataFim?: string) {
     const [totalClientes, totalDiaristas, diaristasNaoAprovadas, totalServicos, servicosConcluidos] = await Promise.all([
       this.userRepo.count({ where: { role: 'cliente' } }),
       this.userRepo.count({ where: { role: 'diarista', documentoVerificado: true } }),
