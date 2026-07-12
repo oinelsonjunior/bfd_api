@@ -64,6 +64,18 @@ export class AdminController {
   @Roles('admin' as any)
   listarClientes() { return this.adminService.listarClientes(); }
 
+  @Get('pagamentos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  listarPagamentos() { return this.adminService.pagamentos(); }
+  @Post('servicos/:id/cancelar')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  cancelarServico(@Param('id') id: string) { return this.adminService.cancelarServico(id); }
+  @Post('push')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  enviarPush(@Body() body: { titulo: string; mensagem: string; role: string }) { return this.adminService.enviarPushGeral(body.titulo, body.mensagem, body.role); }
   @Get('servicos')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin' as any)
