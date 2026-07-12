@@ -132,6 +132,48 @@ export class AdminService {
     return this.servicoRepo.save(servico);
   }
 
+  async relatorioServicos() {
+    const servicos = await this.servicoRepo.find({
+      order: { createdAt: 'DESC' },
+      relations: ['cliente', 'diarista', 'endereco'],
+    });
+    return servicos.map(s => ({
+      id: s.id,
+      data: s.createdAt,
+      tipo: s.tipo,
+      status: s.status,
+      cliente: s.cliente?.nome ?? '',
+      diarista: s.diarista?.nome ?? '',
+      endereco: s.endereco ? `${s.endereco.logradouro}, ${s.endereco.numero} - ${s.endereco.cidade}/${s.endereco.estado}` : '',
+      valorTotal: s.valorTotal,
+      horasEstimadas: s.horasEstimadas,
+    }));
+  }
+
+  async relatorioPagamentos() {
+    const pagamentos = await this.pagamentoRepo.find({
+      order: { createdAt: 'DESC' },
+      relations: ['servico'],
+    });
+    return pagamentos.map(p => ({
+      id: p.id,
+      data: p.createdAt,
+      metodo: p.metodo,
+      status: p.status,
+      valor: p.valor,
+      gatewayId: p.gatewayId,
+      servicoId: p.servicoId,
+    }));
+  }
+
+  async avaliacoes() {
+    return this.servicoRepo.find({
+      where: [{ avaliacaoNota: 1 }, { avaliacaoNota: 2 }, { avaliacaoNota: 3 }, { avaliacaoNota: 4 }, { avaliacaoNota: 5 }],
+      order: { updatedAt: 'DESC' },
+      relations: ['cliente', 'diarista'],
+    });
+  }
+
   async enviarPushGeral(titulo: string, mensagem: string, role: string) {
     return this.notificacaoService.enviarParaRole(
       role as any,

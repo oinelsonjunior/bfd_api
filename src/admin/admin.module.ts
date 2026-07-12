@@ -68,6 +68,18 @@ export class AdminController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin' as any)
   listarPagamentos() { return this.adminService.pagamentos(); }
+  @Get('relatorios/servicos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  relatorioServicos() { return this.adminService.relatorioServicos(); }
+  @Get('relatorios/pagamentos')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  relatorioPagamentos() { return this.adminService.relatorioPagamentos(); }
+  @Get('avaliacoes')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin' as any)
+  avaliacoes() { return this.adminService.avaliacoes(); }
   @Post('servicos/:id/cancelar')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('admin' as any)
